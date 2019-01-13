@@ -1,0 +1,61 @@
+<form id="contactForm">
+  <div class="contacts__row">
+    <input type="text" name="First Name" class="contacts__column" placeholder="First Name" required>
+    <input type="text" name="Last Name" class="contacts__column" placeholder="Last Name" required>
+  </div>
+  <div class="contacts__row">
+    <input type="text" name="Company" class="contacts__column" placeholder="Company">
+    <input type="text" name="Job Title" class="contacts__column" placeholder="Title">
+  </div>
+  <div class="contacts__row">
+    <input type="email" name="Email" class="contacts__column" placeholder="Email" required>
+    <input type="tel" name="Phone" class="contacts__column" placeholder="Phone">
+  </div>
+  <div class="contacts__row">
+    <textarea name="Message" class="contacts__column100" rows="6" placeholder="Your Message" required></textarea>
+  </div>
+  <div id="contactFormHint" class="contacts__hint">Fields marked with * are required</div>
+  <button type="submit" class="actionButton" onclick="onFormSubmit(this)">Send</button>
+</form>
+
+<script type="application/javascript">
+  function onFormSubmit(submit) {
+    const form = document.getElementById('contactForm');
+    if (!form.checkValidity())
+      return;
+    // *******************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**************************************************
+    const url = 'https://YOUR_AMAZON_POST_URL_HERE?source=your_environment_variable_name';
+    // *******************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**************************************************
+    const toast = document.getElementById('contactFormHint');
+
+    toast.innerHTML = "Sending...";
+    submit.disabled = true;
+
+    let payload = {};
+    const inputs = form.elements;
+    for (i = 0; i < inputs.length; i++)
+      if (inputs[i].name)
+        payload[inputs[i].name] = inputs[i].value;
+
+    let req = new XMLHttpRequest();
+    req.open("POST", url, true);
+    req.setRequestHeader("Content-Type", "application/json");
+    req.onerror = function () {
+      submit.disabled = false;
+    };
+    req.onload = function () {
+      submit.disabled = false;
+      if (req.status < 400) {
+        toast.innerHTML = "We have received your message.";
+        // Reset all form fields.
+        for (i = 0; i < inputs.length; i++)
+          if (inputs[i].name)
+            inputs[i].value = '';
+      } else {
+        toast.innerHTML = "{{ T "contactMessageError" }}";
+        console.error("Request failed: " + req.statusText);
+      }
+    };
+    req.send(JSON.stringify(payload));
+  }
+</script>
