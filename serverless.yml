@@ -1,0 +1,44 @@
+service: send-email
+
+app: send-email
+tenant: mrascii
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  # Change stage to production one if necessary
+  stage: dev
+  # Change region to the most appropriate one
+  region: eu-west-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ses:SendEmail"
+      Resource: ["*"]
+    - Effect: "Allow"
+      Action:
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:DescribeLogGroups"
+        - "logs:DescribeLogStreams"
+        - "logs:PutLogEvents"
+        - "logs:GetLogEvents"
+        - "logs:FilterLogEvents"
+      Resource: ["*"]
+
+functions:
+  sendMail:
+    handler: handler.sendMail
+    description: Send email using SES service.
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          method: post
+          path: send
+          cors: true
+          integration: lambda
+          request:
+            parameters:
+              querystrings:
+                source: true
