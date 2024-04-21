@@ -63,18 +63,23 @@ module.exports.sendMail = async (event, context) => {
         [email ? (name ? `"${encodedName}" <${email}>` : email) : params.to],
   };
 
-  const AWS = require('aws-sdk');
-  const SES = new AWS.SES({
-    apiVersion: '2010-12-01',
-    maxRetries: 5,
-    httpOptions: {
-      timeout: 10 * 1000,
-      connectTimeout: 10 * 1000,
-    },
+  const {
+    SES,
+  } = require('@aws-sdk/client-ses');
+  const ses = new SES({
+    maxAttempts: 5,
+
+    // // The transformation for httpOptions is not implemented.
+    // // Refer to UPGRADING.md on aws-sdk-js-v3 for changes needed.
+    // // Please create/upvote feature request on aws-sdk-js-codemod for httpOptions.
+    // httpOptions: {
+    //   timeout: 10 * 1000,
+    //   connectTimeout: 10 * 1000,
+    // },
   });
 
   try {
-    return await SES.sendEmail(sesParams).promise();
+    return await ses.sendEmail(sesParams);
   } catch (e) {
     console.error("Failed to send email.");
     return e;
